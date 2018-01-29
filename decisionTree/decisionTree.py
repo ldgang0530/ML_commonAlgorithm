@@ -111,11 +111,24 @@ def constructTree(dataSet,labels):
         #bestIndex = selectBestFeature_C45(dataSet) #C4.5
         subDict = splitDataSet(dataSet,bestIndex)
         subLabel = labels[:bestIndex]+labels[bestIndex+1:]
-        tmpList = []
+        tmpVec = {}
         for i in subDict:
             if(subDict[i]):
                 tmpResult = travel(subDict[i],subLabel)
-                tmpList.append({i:tmpResult})  #i表示字典的key
-        result[labels[bestIndex]] = tmpList
+                tmpVec[i]=tmpResult  #i表示字典的key
+        result[labels[bestIndex]] = tmpVec
         return result
     return travel(dataSet,labels)
+
+def treeClassify(testData,tree, colLabels):
+    firstStrSides = list(tree.keys())  # 获取标签字符串
+    firstStr = firstStrSides[0]
+    secondDict = tree[firstStr]  # 标签对应的子数据集
+    featIndex = colLabels.index(firstStr)  # 将标签字符串转换为索引
+    for key in secondDict.keys():  # 遍历整棵树
+        if testData[featIndex] == key:  # 比较testVec中值与树节点的值，若达到叶子节点，则返回当前节点的分类标签
+            if type(secondDict[key]).__name__ == 'dict':
+                classLabel = treeClassify(testData,secondDict[key], colLabels)
+            else:
+                classLabel = secondDict[key]
+    return classLabel
